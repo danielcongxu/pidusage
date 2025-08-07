@@ -105,7 +105,13 @@ func statFromPS(pid int) (*SysInfo, error) {
 	if platform == "aix" {
 		args = "-o pcpu,rssize -p"
 	}
-	stdout, _ := exec.Command("ps", args, strconv.Itoa(pid)).Output()
+	stdout, err := exec.Command("ps", args, strconv.Itoa(pid)).Output()
+	if err != nil {
+		return sysInfo, err
+	}
+	if len(stdout) < 2 {
+		return sysInfo, errors.New("Invalid stat with this PID: " + strconv.Itoa(pid))
+	}
 	ret := formatStdOut(stdout, 1)
 	if len(ret) == 0 {
 		return sysInfo, errors.New("Can't find process with this PID: " + strconv.Itoa(pid))
